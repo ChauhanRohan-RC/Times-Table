@@ -1,6 +1,7 @@
 package main.ui;
 
 import main.R;
+import main.util.Log;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import org.jetbrains.annotations.Unmodifiable;
@@ -62,25 +63,29 @@ public class TimesTablePanel extends JPanel {
 
     public interface Listener {
 
-        void onIsPlayingChanged(boolean playing);
+        void onIsPlayingChanged(@NotNull TimesTablePanel panel, boolean playing);
 
-        void onTimesFactorSpeedChanged(float percent);
+        void onTimesFactorSpeedChanged(@NotNull TimesTablePanel panel, float percent);
 
-        void onTimesFactorChanged(float timesFactor);
+        void onTimesFactorChanged(@NotNull TimesTablePanel panel, float timesFactor);
 
-        void onPointsCountChanged(int count);
+        void onPointsCountChanged(@NotNull TimesTablePanel panel, int count);
 
-        void onTimesFactorStickOnIntChanged(boolean stickingEnabled);
+        void onTimesFactorStickOnIntChanged(@NotNull TimesTablePanel panel, boolean stickingEnabled);
 
-        void onEndBehaviourChanged(@NotNull EndBehaviour old, @NotNull EndBehaviour _new);
+        void onEndBehaviourChanged(@NotNull TimesTablePanel panel, @NotNull EndBehaviour old, @NotNull EndBehaviour _new);
 
-        void onYInvertedChanged(boolean yInverted);
+        void onDrawCircleChanged(@NotNull TimesTablePanel panel, boolean drawCircle);
 
-        void onXInvertedChanged(boolean xInverted);
+        void onDrawPointsChanged(@NotNull TimesTablePanel panel, boolean drawPoints);
 
-        default void onScaleChanged(double scale) { }
+        void onYInvertedChanged(@NotNull TimesTablePanel panel, boolean yInverted);
 
-        default void onDragChanged(@Nullable Size drag) { }
+        void onXInvertedChanged(@NotNull TimesTablePanel panel, boolean xInverted);
+
+        default void onScaleChanged(@NotNull TimesTablePanel panel, double scale) { }
+
+        default void onDragChanged(@NotNull TimesTablePanel panel, @Nullable Size drag) { }
     }
 
 
@@ -90,7 +95,7 @@ public class TimesTablePanel extends JPanel {
 
 
     public static final boolean DEFAULT_TIMES_FACTOR_STICK_WHEN_INT_ENABLED = false;
-    public static final long TIMES_FACTOR_STICK_WHEN_INT_DURATION_MS = 200;
+    public static final long TIMES_FACTOR_STICK_WHEN_INT_DURATION_MS = 600;
 
     public static final float TIMES_FACTOR_MIN = 1;
     public static final float TIMES_FACTOR_MAX = 500;
@@ -113,7 +118,7 @@ public class TimesTablePanel extends JPanel {
 
     public static final float TIMES_FACTOR_STEP_PER_MS_MIN = 0.0001f;
     public static final float TIMES_FACTOR_STEP_PER_MS_MAX = 0.002f;
-    public static final float TIMES_FACTOR_STEP_PER_MS_DEFAULT = getTimesFactorStepPerMs(50);
+    public static final float TIMES_FACTOR_STEP_PER_MS_DEFAULT = getTimesFactorStepPerMs(25);
 
     public static float getTimesFactorSpeedPercent(float stepPerMs) {
         return RMath.map(RMath.constraint(Math.abs(stepPerMs), TIMES_FACTOR_STEP_PER_MS_MIN, TIMES_FACTOR_STEP_PER_MS_MAX), TIMES_FACTOR_STEP_PER_MS_MIN, TIMES_FACTOR_STEP_PER_MS_MAX, 0, 100);
@@ -146,6 +151,8 @@ public class TimesTablePanel extends JPanel {
 
     private boolean mInvertX = GlConfig.DEFAULT_INVERT_X;
     private boolean mInvertY = GlConfig.DEFAULT_INVERT_Y;
+    private boolean mDrawCircle = GlConfig.DEFAULT_DRAW_CIRCLE;
+    private boolean mDrawPoints = GlConfig.DEFAULT_DRAW_POINTS;
     private double mScale = 1;
     @Nullable
     private Size mDrag;
@@ -209,7 +216,6 @@ public class TimesTablePanel extends JPanel {
             g.drawString(String.format("Times: %.2f", timesFactor), 20, height - 20);
         }
 
-
         /* ..........................  Pre-Transforms ...........................*/
         final AffineTransform t = g.getTransform();
 
@@ -231,22 +237,28 @@ public class TimesTablePanel extends JPanel {
 
         // Circle
         final float circleRadius = getCircleRadius(width, height);
-        g.setColor(GlConfig.circleColor(timesFactor));
-        g.draw(new Ellipse2D.Float(-circleRadius, -circleRadius, circleRadius * 2, circleRadius * 2));
+        final boolean drawCircle = mDrawCircle;
+        if (drawCircle) {
+            g.setColor(GlConfig.circleColor(timesFactor));
+            g.draw(new Ellipse2D.Float(-circleRadius, -circleRadius, circleRadius * 2, circleRadius * 2));
+        }
 
         // Points
         final float pointRadius = getPointRadius(circleRadius, pointsCount), pointDia = pointRadius * 2;
         final float delTheta = RMath.TWO_PI / pointsCount;
         Vector v1, v2;
 
+        final boolean drawPoints = mDrawPoints;
         final Color pointColor = GlConfig.pointColor(timesFactor);
         final IntFunction<Color> colorFunc = GlConfig.patternColorFunction(pointsCount, timesFactor);
 
         for (int i=0; i < pointsCount; i++) {
             // point
             v1 = createVector(i, delTheta, circleRadius);
-            g.setColor(pointColor);
-            g.fill(new Ellipse2D.Float(v1.x - pointRadius, v1.y - pointRadius, pointDia, pointDia));
+            if (drawPoints) {
+                g.setColor(pointColor);
+                g.fill(new Ellipse2D.Float(v1.x - pointRadius, v1.y - pointRadius, pointDia, pointDia));
+            }
 
             // line
             float i2 = (i * timesFactor) % pointsCount;
@@ -419,7 +431,7 @@ public class TimesTablePanel extends JPanel {
             noteCurrentTimesFactorOnPause();
         }
 
-        forEachListener(l -> l.onIsPlayingChanged(playing));
+        forEachListener(l -> l.onIsPlayingChanged(this, playing));
     }
 
 
@@ -464,7 +476,7 @@ public class TimesTablePanel extends JPanel {
 
     protected void onTimesFactorChanged(float timesFactor) {
         update();
-        forEachListener(l -> l.onTimesFactorChanged(timesFactor));
+        forEachListener(l -> l.onTimesFactorChanged(this, timesFactor));
     }
 
     private void setTimesFactorInternal(float timesFactor) {
@@ -488,7 +500,7 @@ public class TimesTablePanel extends JPanel {
 
     protected void onPointsCountChanged(int pointsCount) {
         update();
-        forEachListener(l -> l.onPointsCountChanged(pointsCount));
+        forEachListener(l -> l.onPointsCountChanged(this, pointsCount));
     }
 
     private void setPointsCountInternal(int pointsCount) {
@@ -511,7 +523,7 @@ public class TimesTablePanel extends JPanel {
 
     protected void onTimesFactorStepPerMsChanged(float stepPerMs) {
         final float percent = getTimesFactorSpeedPercent(stepPerMs);
-        forEachListener(l -> l.onTimesFactorSpeedChanged(percent));
+        forEachListener(l -> l.onTimesFactorSpeedChanged(this, percent));
     }
 
     private float setTimesFactorStepPerMsInternal(float newStepPerMs) {
@@ -535,7 +547,7 @@ public class TimesTablePanel extends JPanel {
 
     protected void onTimesFactorStickOnIntChanged(boolean stickOnIntEnabled) {
         update();
-        forEachListener(l -> l.onTimesFactorStickOnIntChanged(stickOnIntEnabled));
+        forEachListener(l -> l.onTimesFactorStickOnIntChanged(this, stickOnIntEnabled));
     }
 
     private void setTimesFactorStickOnIntEnabledInternal(boolean stickOnIntEnabled) {
@@ -561,7 +573,7 @@ public class TimesTablePanel extends JPanel {
 
 
     protected void onEndBehaviourChanged(@NotNull EndBehaviour old, @NotNull EndBehaviour _new) {
-        forEachListener(l -> l.onEndBehaviourChanged(old, _new));
+        forEachListener(l -> l.onEndBehaviourChanged(this, old, _new));
     }
 
     public void setEndBehaviour(@NotNull EndBehaviour endBehaviour) {
@@ -577,11 +589,6 @@ public class TimesTablePanel extends JPanel {
         return mEndBehaviour;
     }
 
-    public void setDarkMode(boolean darkMode) {
-        GlConfig.setDarkMode(darkMode);
-        updateTheme();
-    }
-
     public void setPatternColorMode(@NotNull GlConfig.PatternColorMode colorMode) {
         GlConfig.setPatternColorMode(colorMode);
         updateTheme();
@@ -591,11 +598,53 @@ public class TimesTablePanel extends JPanel {
 
     /*  ..................................... Transforms ............................*/
 
+    private void onDrawCircleChanged(boolean drawCircle) {
+        update();
+        forEachListener(l -> l.onDrawCircleChanged(this, drawCircle));
+    }
+
+    public void setDrawCircle(boolean drawCircle) {
+        if (mDrawCircle != drawCircle) {
+            mDrawCircle = drawCircle;
+            onDrawCircleChanged(drawCircle);
+        }
+    }
+
+    public void toggleDrawCircle() {
+        setDrawCircle(!mDrawCircle);
+    }
+
+    public boolean isDrawCircleEnabled() {
+        return mDrawCircle;
+    }
+
+
+    private void onDrawPointsChanged(boolean drawPoints) {
+        update();
+        forEachListener(l -> l.onDrawPointsChanged(this, drawPoints));
+    }
+
+    public void setDrawPoints(boolean drawPoints) {
+        if (mDrawPoints != drawPoints) {
+            mDrawPoints = drawPoints;
+            onDrawPointsChanged(drawPoints);
+        }
+    }
+
+    public void toggleDrawPoints() {
+        setDrawPoints(!mDrawPoints);
+    }
+
+    public boolean isDrawPointsEnabled() {
+        return mDrawPoints;
+    }
+
+
     /* Inversion */
 
     private void onInvertYChanged(boolean yInverted) {
         update();
-        forEachListener(l -> l.onYInvertedChanged(yInverted));
+        forEachListener(l -> l.onYInvertedChanged(this, yInverted));
     }
 
     public void setInvertY(boolean invertY) {
@@ -603,6 +652,10 @@ public class TimesTablePanel extends JPanel {
             mInvertY = invertY;
             onInvertYChanged(invertY);
         }
+    }
+
+    public void toggleInvertY() {
+        setInvertY(!mInvertY);
     }
 
     public boolean isYInverted() {
@@ -613,7 +666,7 @@ public class TimesTablePanel extends JPanel {
 
     private void onInvertXChanged(boolean xInverted) {
         update();
-        forEachListener(l -> l.onXInvertedChanged(xInverted));
+        forEachListener(l -> l.onXInvertedChanged(this, xInverted));
     }
 
     public void setInvertX(boolean invertX) {
@@ -621,6 +674,10 @@ public class TimesTablePanel extends JPanel {
             mInvertX = invertX;
             onInvertXChanged(invertX);
         }
+    }
+
+    public void toggleInvertX() {
+        setInvertX(!mInvertX);
     }
 
     public boolean isXInverted() {
@@ -668,7 +725,7 @@ public class TimesTablePanel extends JPanel {
             update();
         }
 
-        forEachListener(l -> l.onScaleChanged(scale));
+        forEachListener(l -> l.onScaleChanged(this, scale));
     }
 
     private boolean setScale(double scale, boolean update) {
@@ -755,7 +812,7 @@ public class TimesTablePanel extends JPanel {
         }
 
         final Size copy = drag != null? drag.copy(): null;
-        forEachListener(l -> l.onDragChanged(copy));
+        forEachListener(l -> l.onDragChanged(this, copy));
     }
 
     private boolean setDrag(@Nullable Size drag, boolean update) {

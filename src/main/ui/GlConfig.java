@@ -1,10 +1,14 @@
 package main.ui;
 
+import com.formdev.flatlaf.FlatDarculaLaf;
+import main.R;
+import main.util.Log;
 import org.jetbrains.annotations.NotNull;
 import main.math.RMath;
 import org.jetbrains.annotations.Nullable;
 import org.jetbrains.annotations.Unmodifiable;
 
+import javax.swing.*;
 import java.awt.*;
 import java.util.function.IntFunction;
 
@@ -14,6 +18,10 @@ public class GlConfig {
     public static final boolean FORCE_ANTIALIASING = true;
     public static final boolean DEFAULT_FULLSCREEN = false;
     public static final boolean DEFAULT_CONTROLS_VISIBLE = true;
+    public static final boolean DEFAULT_MENUBAR_VISIBLE = true;
+
+    public static final boolean DEFAULT_DRAW_CIRCLE = false;
+    public static final boolean DEFAULT_DRAW_POINTS = false;
 
     // .................. Transforms  ................
     public static final boolean DEFAULT_INVERT_X = false;
@@ -26,6 +34,10 @@ public class GlConfig {
     public static final double DEFAULT_SCALE_UNIT_DECREMENT_BELOW_1 = 0.1;
     public static final double DRAG_X_UNITS = 50;
     public static final double DRAG_Y_UNITS = 50;
+
+    public static void init() {
+        setDarkModeInternal(DEFAULT_DARK_MODE);
+    }
 
     /*.............................. THEME .................................*/
 
@@ -81,9 +93,9 @@ public class GlConfig {
     }
 
 
+    public static final boolean DEFAULT_DARK_MODE = true;
 
-
-    private static boolean sDarkMode = true;
+    private static boolean sDarkMode = DEFAULT_DARK_MODE;
     @NotNull
     private static PatternColorMode sPatternColorMode = PatternColorMode.PATTERN;
 
@@ -91,8 +103,22 @@ public class GlConfig {
         return sDarkMode;
     }
 
-    public static void setDarkMode(boolean darkMode) {
+    /**
+     * @return whether to update the ui tree
+     * */
+    public static boolean setDarkModeInternal(boolean darkMode) {
         sDarkMode = darkMode;
+        return R.setLafDark(darkMode);
+    }
+
+    /**
+     * @return whether to update the ui tree
+     * */
+    public static boolean setDarkMode(boolean darkMode) {
+        if (sDarkMode == darkMode)
+            return false;
+
+        return setDarkModeInternal(darkMode);
     }
 
     @NotNull

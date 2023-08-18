@@ -8,5 +8,7 @@
     <orderEntry type="inheritedJdk" />
     <orderEntry type="sourceFolder" forTests="false" />
     <orderEntry type="library" name="org.jetbrains.annotations.19.0.0" level="project" />
+    <orderEntry type="library" name="flatlaf-2.6-sources" level="project" />
+    <orderEntry type="library" name="flatlaf-intellij-themes-2.6-sources" level="project" />
   </component>
 </module>

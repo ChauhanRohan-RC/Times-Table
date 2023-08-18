@@ -1,17 +1,90 @@
 package main;
 
+import com.formdev.flatlaf.FlatDarculaLaf;
+import com.formdev.flatlaf.FlatDarkLaf;
+import com.formdev.flatlaf.FlatIntelliJLaf;
+import com.formdev.flatlaf.FlatLightLaf;
+import com.formdev.flatlaf.intellijthemes.FlatArcOrangeIJTheme;
+import com.formdev.flatlaf.intellijthemes.FlatDarkPurpleIJTheme;
+import com.formdev.flatlaf.intellijthemes.FlatOneDarkIJTheme;
+import com.formdev.flatlaf.intellijthemes.materialthemeuilite.FlatMaterialDarkerIJTheme;
+import com.formdev.flatlaf.intellijthemes.materialthemeuilite.FlatMaterialLighterIJTheme;
+import main.util.Log;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
-import main.util.Log;
 
+import javax.swing.*;
 import java.awt.*;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
 
 public class R {
 
-    public static final String TAG = "main.R";
+    public static final String TAG = "R";
     public static final String APP_NAME = "Times Table";
+
+
+
+    @NotNull
+    public static final java.util.List<UIManager.LookAndFeelInfo> LOOK_AND_FEELS_INTERNAL;
+    @NotNull
+    public static final java.util.List<UIManager.LookAndFeelInfo> LOOK_AND_FEELS_FLAT_LAF;
+    @NotNull
+    public static final List<UIManager.LookAndFeelInfo> LOOK_AND_FEELS_FLAT_LAF_MATERIAL;
+
+    static {
+        // internal LAF's
+        final UIManager.LookAndFeelInfo[] infos = UIManager.getInstalledLookAndFeels();
+        LOOK_AND_FEELS_INTERNAL = Arrays.asList(infos);
+
+        // Main LAF's
+        LOOK_AND_FEELS_FLAT_LAF = new ArrayList<>();
+        LOOK_AND_FEELS_FLAT_LAF.add(new UIManager.LookAndFeelInfo(FlatLightLaf.NAME, FlatLightLaf.class.getName()));
+        LOOK_AND_FEELS_FLAT_LAF.add(new UIManager.LookAndFeelInfo(FlatIntelliJLaf.NAME, FlatIntelliJLaf.class.getName()));
+        LOOK_AND_FEELS_FLAT_LAF.add(new UIManager.LookAndFeelInfo(FlatDarkLaf.NAME, FlatDarkLaf.class.getName()));
+        LOOK_AND_FEELS_FLAT_LAF.add(new UIManager.LookAndFeelInfo(FlatDarculaLaf.NAME, FlatDarculaLaf.class.getName()));
+
+        // Material LAF's
+        LOOK_AND_FEELS_FLAT_LAF_MATERIAL = new ArrayList<>();
+        LOOK_AND_FEELS_FLAT_LAF_MATERIAL.add(new UIManager.LookAndFeelInfo(FlatMaterialLighterIJTheme.NAME, FlatMaterialLighterIJTheme.class.getName()));
+        LOOK_AND_FEELS_FLAT_LAF_MATERIAL.add(new UIManager.LookAndFeelInfo(FlatMaterialDarkerIJTheme.NAME, FlatMaterialDarkerIJTheme.class.getName()));
+        LOOK_AND_FEELS_FLAT_LAF_MATERIAL.add(new UIManager.LookAndFeelInfo(FlatOneDarkIJTheme.NAME, FlatOneDarkIJTheme.class.getName()));
+        LOOK_AND_FEELS_FLAT_LAF_MATERIAL.add(new UIManager.LookAndFeelInfo(FlatArcOrangeIJTheme.NAME, FlatArcOrangeIJTheme.class.getName()));
+        LOOK_AND_FEELS_FLAT_LAF_MATERIAL.add(new UIManager.LookAndFeelInfo(FlatDarkPurpleIJTheme.NAME, FlatDarkPurpleIJTheme.class.getName()));
+
+        // Install
+        LOOK_AND_FEELS_FLAT_LAF.forEach(UIManager::installLookAndFeel);
+        LOOK_AND_FEELS_FLAT_LAF_MATERIAL.forEach(UIManager::installLookAndFeel);
+    }
+
+    public static final Class<?> LAF_DARK = FlatDarculaLaf.class;
+    public static final Class<?> LAF_LIGHT = FlatArcOrangeIJTheme.class;
+
+    public static void init() {
+
+    }
+
+    public static boolean setLookAndFeel(@NotNull String lafClassName) {
+        try {
+            UIManager.setLookAndFeel(lafClassName);
+            return true;
+        } catch (Exception exc) {
+            Log.e(TAG, "Failed to set Theme: " + lafClassName, exc);
+        }
+
+        return false;
+    }
+
+    public static boolean setLafDark(boolean darkLaf) {
+        return setLookAndFeel((darkLaf? LAF_DARK: LAF_LIGHT).getName());
+    }
+
+
+
+    /* Dir Structure */
 
     public static final Path DIR_MAIN = Path.of("").toAbsolutePath();
 
@@ -46,8 +119,8 @@ public class R {
     }
 
     @NotNull
-    public static String getDarkModeTooltipText() {
-        return "Switch Dark mode";
+    public static String getDarkModeShortDes() {
+        return "Switch Dark mode [Shift-D]";
     }
 
 
@@ -57,8 +130,8 @@ public class R {
     }
 
     @NotNull
-    public static String getInvertYTooltipText() {
-        return "Invert Y-axis";
+    public static String getInvertYShortDes() {
+        return "Invert Y-axis [Shift-Y]";
     }
 
     @NotNull
@@ -67,10 +140,30 @@ public class R {
     }
 
     @NotNull
-    public static String getInvertXTooltipText() {
-        return "Invert X-axis";
+    public static String getInvertXShortDes() {
+        return "Invert X-axis [Shift-X]";
     }
 
+
+    @NotNull
+    public static String getDrawCircleText() {
+        return "Circle";
+    }
+
+    @NotNull
+    public static String getDrawCircleShortDes() {
+        return "Draw circle";
+    }
+
+    @NotNull
+    public static String getDrawPointsText() {
+        return "Points";
+    }
+
+    @NotNull
+    public static String getDrawPointsShortDes() {
+        return "Draw points around the circle";
+    }
 
     @NotNull
     public static String getStickOnIntText() {
@@ -89,7 +182,7 @@ public class R {
     }
 
     @NotNull
-    public static String getEndBehaviourTooltipText() {
+    public static String getEndBehaviourShortDes() {
         return "Configure end behaviour";
     }
 
@@ -99,20 +192,10 @@ public class R {
     }
 
     @NotNull
-    public static String getPatternColorModeTooltipText() {
+    public static String getPatternColorModeShortDes() {
         return "configure how different patterns are coloured";
     }
 
-
-    @NotNull
-    public static String getToggleControlsText(boolean controlsShown) {
-        return controlsShown? "Hide Dock": "Show Dock";
-    }
-
-    @NotNull
-    public static String getToggleControlsTooltipText(boolean controlsShown) {
-        return (controlsShown? "Hide controls dock": "Show controls dock") + " [Ctrl-C]";
-    }
 
     @NotNull
     public static String getPlayPauseText(boolean playing) {
@@ -120,18 +203,18 @@ public class R {
     }
 
     @NotNull
-    public static String getPlayPauseTooltipText(boolean playing) {
-        return (playing? "pause rotors": "start rotors") + " [SPACE]";
+    public static String getPlayPauseShortDes(boolean playing) {
+        return (playing? "pause times table": "start times table") + " [SPACE]";
     }
 
     @NotNull
-    public static String getResetText() {
+    public static String getResetMainText() {
         return "Reset";
     }
 
     @NotNull
-    public static String getResetTooltipText() {
-        return "Reset [Ctrl-main.R]";
+    public static String getResetMainShortDes() {
+        return "Reset [R]";
     }
 
     @NotNull
@@ -140,8 +223,18 @@ public class R {
     }
 
     @NotNull
-    public static String getResetScaleAndDragTooltipText() {
-        return "Reset viewport [Shift-main.R]";
+    public static String getResetScaleAndDragShortDes() {
+        return "Reset viewport [Shift-R]";
+    }
+
+    @NotNull
+    public static String getResetAllText() {
+        return "Reset All";
+    }
+
+    @NotNull
+    public static String getResetAllShortDes() {
+        return "Reset everything [Ctrl-R]";
     }
 
     @NotNull
@@ -150,7 +243,7 @@ public class R {
     }
 
     @NotNull
-    public static String getTimesFactorTooltipText() {
+    public static String getTimesFactorShortDes() {
         return "Change Times Table Factor";
     }
 
@@ -160,7 +253,7 @@ public class R {
     }
 
     @NotNull
-    public static String getPointsCountTooltipText() {
+    public static String getPointsCountShortDes() {
         return "Change Times Table points";
     }
 
@@ -171,24 +264,10 @@ public class R {
     }
 
     @NotNull
-    public static String getSpeedSliderTooltipText() {
+    public static String getSpeedSliderShortDes() {
         return "change speed";
     }
 
-    @NotNull
-    public static String getScaleText(double scale) {
-        return "Scale: " + ((int) Math.round(scale * 100)) + "%";
-    }
-
-    @NotNull
-    public static String getScaleIncTooltipText() {
-        return "Zoom In [Shift-UP]";
-    }
-
-    @NotNull
-    public static String getScaleDecTooltipText() {
-        return "Zoom Out [Shift-DOWN]";
-    }
 
 
     @Nullable
@@ -196,5 +275,66 @@ public class R {
         return String.format("Times: %.2f", timesFactor);
     }
 
+    @NotNull
+    public static String getToggleControlsText(boolean controlsShown) {
+        return (controlsShown? "Hide": "Show") + " Dock";
+    }
+
+    @NotNull
+    public static String getToggleControlsShortDescription(boolean controlsShown) {
+        return (controlsShown? "Hide": "Show") + " Controls Dock [Shift-C]";
+    }
+
+    @NotNull
+    public static String getToggleMenuBarText(boolean menuVisible) {
+        return (menuVisible? "Hide": "Show") + " Menu";
+    }
+
+    @NotNull
+    public static String getToggleMenuBarShortDescription(boolean menuVisible) {
+        return (menuVisible? "Hide": "Show") + " Menu [Shift-M]";
+    }
+
+    @NotNull
+    public static String getTogglePresentationModeText(boolean presenting) {
+        return (presenting? "Exit": "Enter") + " Presentation Mode";
+    }
+
+
+    public static String getTogglePresentationModeShortDescription(boolean presenting) {
+        return (presenting? "Leave": "Enter") + " Presentation [Shift-P]";
+    }
+
+
+    @NotNull
+    public static String getScaleText(boolean inc) {
+        return inc? "+": "-";
+    }
+
+    @NotNull
+    public static String getScaleShortDescription(boolean inc) {
+        return inc? "Zoom In [Shift-UP]": "Zoom Out [Shift-DOWN]";
+    }
+
+    @NotNull
+    public static String getScaleText(double scale) {
+        return "Scale: " + ((int) Math.round(scale * 100)) + "%";
+    }
+
+
+    @NotNull
+    public static String getFullscreenText() {
+        return "Fullscreen";
+    }
+
+    @NotNull
+    public static String getFullscreenText(boolean isFullscreen) {
+        return isFullscreen? "Exit Fullscreen": "Fullscreen";
+    }
+
+    @NotNull
+    public static String getFullscreenShortDescription(boolean isFullscreen) {
+        return (isFullscreen? "Exit": "Enter") + " Fullscreen [Ctrl-F]";
+    }
 
 }
